@@ -1,11 +1,12 @@
-id: 40132
+id: 40233
 name: productsync-app
 environments:
     production:
         memory: 1024
         cli-memory: 512
         runtime: 'php-8.1:al2'
+        database: app1
         build:
-            - 'COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev'
-            - 'php artisan event:cache'
-            - 'npm ci && npm run prod && rm -rf node_modules'
+            - 'COMPOSER_MIRROR_PATH_REPOS=1 composer install'
+        deploy:
+            - php artisan migrate --force

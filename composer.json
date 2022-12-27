@@ -13,7 +13,8 @@
         "laravel/tinker": "^2.5",
         "laravel/vapor-cli": "^1.50",
         "laravel/vapor-core": "^2.26",
-        "laravel/vapor-ui": "^1.5"
+        "laravel/vapor-ui": "^1.5",
+        "osiset/laravel-shopify": "^17.3"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
