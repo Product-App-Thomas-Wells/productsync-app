@@ -12,7 +12,8 @@
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "laravel/vapor-cli": "^1.50",
-        "laravel/vapor-core": "^2.26"
+        "laravel/vapor-core": "^2.26",
+        "laravel/vapor-ui": "^1.5"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
