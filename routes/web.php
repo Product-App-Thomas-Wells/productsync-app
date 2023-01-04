@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ScriptController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,3 +19,4 @@ Route::get('/', function () {
 })->middleware(['verify.shopify'])->name('home');
 
 Route::resource('products', App\Http\Controllers\ProductController::class);
+Route::get('/scripts/pull_products/trilanco',  [ScriptController::class, 'pull_products_trilanco']);

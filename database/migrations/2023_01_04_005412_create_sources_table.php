@@ -13,19 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('products', function (Blueprint $table) {
+        Schema::create('sources', function (Blueprint $table) {
             $table->integer('id', true);
-            $table->integer('source');
-            $table->string('title', 200);
-            $table->string('sku', 200)->nullable();
-            $table->string('barcode', 200)->nullable()->unique('barcode');
-            $table->double('price')->default(0);
-            $table->text('data')->nullable();
-            $table->string('product_id', 200)->nullable();
-            $table->string('variant_id', 200);
-            $table->integer('status')->default(0);
+            $table->string('name', 500)->unique('name');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrentOnUpdate()->useCurrent();
+            $table->timestamp('products_updated')->nullable();
+            $table->timestamp('stocks_updated')->nullable();
+            $table->timestamp('prices_updated')->nullable();
         });
     }
 
@@ -36,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('sources');
     }
 };
