@@ -15,7 +15,8 @@ use App\Http\Controllers\ScriptController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    //return view('welcome');
+	return redirect('/home');
 })->middleware(['verify.shopify'])->name('home');
 
 Route::resource('products', App\Http\Controllers\ProductController::class);
@@ -23,4 +24,4 @@ Route::get('/scripts/pull_products/trilanco',  [ScriptController::class, 'pull_p
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/home', [App\Http\Controllers\ProductController::class, 'index'])->name('home');

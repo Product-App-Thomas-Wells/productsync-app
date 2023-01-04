@@ -20,11 +20,11 @@
                 </a>
             </li>-->
             <li class="c-sidebar-nav-item">
-                <a class="c-sidebar-nav-link" href="/messages">
+                <a class="c-sidebar-nav-link" href="/products">
                     <svg class="c-sidebar-nav-icon">
                         <use xlink:href="assets/icons/coreui/free-symbol-defs.svg#cui-qr-code"></use>
                     </svg>
-                    Messages
+                    Products
                 </a>
             </li>
             <!--<li class="c-sidebar-nav-item">

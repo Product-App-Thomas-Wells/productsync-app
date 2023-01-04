@@ -18,5 +18,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/products',  'App\Http\Controllers\ProductController@search')->name('product.search');
+Route::get('/products/search',  'App\Http\Controllers\ProductController@api_search')->name('product.api_search');
 Route::post('/products',  'App\Http\Controllers\ProductController@store')->name('product.store');
