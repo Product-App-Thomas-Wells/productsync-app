@@ -261,7 +261,9 @@ class ScriptController extends Controller
 						default:
 							break;
 					}
-					if($skip) continue;	  			
+					
+					// only process one file per run.
+					break; 			
 		  		}
 
 		  	//}
