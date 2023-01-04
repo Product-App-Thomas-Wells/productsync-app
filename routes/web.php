@@ -20,3 +20,7 @@ Route::get('/', function () {
 
 Route::resource('products', App\Http\Controllers\ProductController::class);
 Route::get('/scripts/pull_products/trilanco',  [ScriptController::class, 'pull_products_trilanco']);
+
+Auth::routes(['register' => false]);
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

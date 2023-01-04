@@ -11,6 +11,7 @@
         "laravel/framework": "^8.75",
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
+        "laravel/ui": "^3.4",
         "laravel/vapor-cli": "^1.50",
         "laravel/vapor-core": "^2.26",
         "laravel/vapor-ui": "^1.5",
