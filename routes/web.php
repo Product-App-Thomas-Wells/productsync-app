@@ -19,9 +19,9 @@ Route::get('/', function () {
 	return redirect('/home');
 })->middleware(['verify.shopify'])->name('home');
 
-Route::resource('products', App\Http\Controllers\ProductController::class);
+Route::resource('products', App\Http\Controllers\ProductController::class)->middleware(['verify.shopify']);
 Route::get('/scripts/pull_products/trilanco',  [ScriptController::class, 'pull_products_trilanco']);
 
-Auth::routes();
+Auth::routes(['register' => false]);
 
-Route::get('/home', [App\Http\Controllers\ProductController::class, 'index'])->name('home');
+Route::get('/home', [App\Http\Controllers\ProductController::class, 'index'])->middleware(['verify.shopify'])->name('home2');
