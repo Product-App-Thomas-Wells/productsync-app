@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Source;
 
-class ProductController extends Controller
+class SourceController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -18,7 +18,7 @@ class ProductController extends Controller
 		$sproduct_fields = Product::getShopifyProductFields();	
 		$params = compact('sproduct_fields');
 		//echo "<pre>".print_r($params,true)."</pre>"; die();
-        return view('products.index',$params);
+        return view('sources.index',$params);
     }
 	
 	public function getMappingRecords(Request $request){
@@ -31,9 +31,9 @@ class ProductController extends Controller
 		$function = __FUNCTION__;
 		//echo "<pre>".print_r(compact('function','data'),true)."</pre>"; die();
 
-		$ret = array('product_id' => $data['id']);
+		$ret = array('source_id' => $data['id']);
 		$records = array();
-		$product = Product::where('id',$data['id'])->first();
+		$product = Product::where('source',$data['id'])->orderBy('id','desc')->first();
 		if($product){
 			$tmp = $product->product_data;
 			if($tmp){
@@ -47,28 +47,6 @@ class ProductController extends Controller
 					$ret['status'] = 'success';
 				}
 			}
-			
-			$barcode = $product->barcode;
-			if($barcode){
-				$rows = Product::where('barcode',$barcode)->get();
-				if(count($rows) > 1){
-					$records = array();
-					foreach($rows as $product){
-						$tmp = $product->product_data;
-						if($tmp){
-							$tmp2 = json_decode($tmp,true);
-							if(is_array($tmp2)){
-								$records[] = array(
-									'id' => $product->id,
-									'data' => json_decode(json_encode($tmp2),true)
-								);
-								$ret['records'] = $records;
-								$ret['status'] = 'success';
-							}
-						}
-					}
-				}
-			}
 		}
 		
 		$ret['values'] = array();
@@ -76,8 +54,8 @@ class ProductController extends Controller
 			$ret['status'] = 'error';
 			$ret['message'] = 'data not found';
 		} else {
-			$product = Product::where('id',$data['id'])->first();
-			$tmp = $product->field_mapping;
+			$source = Source::where('id',$data['id'])->first();
+			$tmp = $source->field_mapping;
 			if($tmp){
 				$tmp2 = json_decode($tmp,true);
 				if(is_array($tmp2)){
@@ -101,7 +79,7 @@ class ProductController extends Controller
 		//echo "<pre>".print_r(compact('function','data'),true)."</pre>"; die();
 		$id = $data['id'];
 		unset($data['id']);
-		$tmp = Product::where('id',$id)->update(['field_mapping' => json_encode($data)]);
+		$tmp = Source::where('id',$id)->update(['field_mapping' => json_encode($data)]);
 		
 		header('Content-Type: application/json; charset=utf-8');
 		$status = "success";
@@ -117,7 +95,7 @@ class ProductController extends Controller
         $data = json_decode($json,true);
         //echo "<pre>".print_r($request,true)."</pre>"; die();
         $where = '1';
-        $messages = Product::whereRaw($where);
+        $messages = Source::whereRaw($where);
         $draw = isset($request['draw']) ? $request['draw'] : 1;
         $recordsTotal = $messages->count();
         $where2 = $where." && 1";
@@ -127,7 +105,7 @@ class ProductController extends Controller
         foreach($cols as $col){
             $search_value = isset($col['search']) && isset($col['search']['value']) ? $col['search']['value'] : '';
             $col_name = isset($col['name']) ? $col['name'] : '';
-			if($col_name == "actions"){
+			if($col_name == "actions" || $col_name == "default"){
 				continue;
 			}
             if($search_value){
@@ -139,11 +117,11 @@ class ProductController extends Controller
             }
         }
         if($where3) $where2 .= " && (".$where3.")";
-        $messages = Product::whereRaw($where2);
+        $messages = Source::whereRaw($where2);
         $recordsFiltered = $messages->count();
         $offset = isset($request['start']) ? $request['start'] : 0;
         $limit = isset($request['length']) ? $request['length'] : 10;
-        $messages = Product::select('source','title','sku','barcode','status','id');
+        $messages = Source::select('name','products_updated','stocks_updated','prices_updated','id');
         $messages = $messages->whereRaw($where2);
         $order = isset($request['order']) ? $request['order'] : array();
         foreach($order as $o){
@@ -160,10 +138,11 @@ class ProductController extends Controller
         $data = json_decode(json_encode($messages),true);
         foreach($data as $i => $row){
             //$row['created_at'] = date("Y-m-d H:i:s",strtotime($row['created_at']));
-			$row['source'] = Source::find($row['source'])->name;
-			$statuses = array("New","Pending","Synced");
-			$row['status'] = $statuses[$row['status']];
-			$row['actions'] = '<a href="" class="map-btn" data-id="'.$row['id'].'">Map Fields</a>';
+			//$row['source'] = Source::find($row['source'])->name;
+			//$statuses = array("New","Pending","Synced");
+			//$row['status'] = $statuses[$row['status']];
+			$row['default'] = ($i == 0 ? 'Yes' : 'No');
+			$row['actions'] = '<a href="" class="map-btn" data-id="'.$row['id'].'">Map Product Fields</a>';
             $data[$i] = $row;
         }
         $ret = compact('draw','recordsTotal','recordsFiltered','data');

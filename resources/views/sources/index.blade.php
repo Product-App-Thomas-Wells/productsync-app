@@ -25,29 +25,29 @@
 @section('content')
 <div class="container-fluid">
 	<div class="fade-in">
-	  <div class="row">
-	    <div class="col-md-12">
-	      <div class="card">
-	        <div class="card-header d-flex justify-content-between">Products</div>
-	        <div class="card-body">
-	          <table class="table table-responsive-sm table-hover table-outline mb-0" id="tbl-sims" width="100%">
-	            <thead class="thead-light">
-	              <tr>
-	                <th>Source</th>
-					<th>Title</th>
-					<th>SKU</th>
-	                <th>Barcode</th>
-					<th>Status</th>
-	  				<th>Actions</th>
-	              </tr>
-	            </thead>
-	          </table>
-	        </div>
-	      </div>
-	    </div>
-	    <!-- /.col-->
-	  </div>
-	  <!-- /.row-->
+		<div class="row">
+			<div class="col-md-12">
+			  <div class="card">
+			    <div class="card-header d-flex justify-content-between">Sources</div>
+			    <div class="card-body">
+			      <table class="table table-responsive-sm table-hover table-outline mb-0" id="tbl-sims" width="100%">
+			        <thead class="thead-light">
+			          <tr>
+			            <th>Name</th>
+						<th>Products Updated</th>
+						<th>Stock Updated</th>
+			            <th>Prices Updated</th>
+						<th>Default</th>
+						<th>Actions</th>
+			          </tr>
+			        </thead>
+			      </table>
+			    </div>
+			  </div>
+			</div>
+			<!-- /.col-->
+		</div>
+		<!-- /.row-->
 	</div>
 </div>
 
@@ -130,6 +130,7 @@
 			.addClass('filters')
 			.appendTo('#tbl-sims thead');
 			
+			
 		function addTokenAction(){
 			$('.fieldtoken').click(function(){
 				var token = $(this).attr('data-token');
@@ -151,7 +152,7 @@
 				return(false);
 			});	
 		}
-		
+			
 		function getMappingRecords(table,id){
 			$('#shopifyProductFields #record_id').val(id);
             $.ajax({
@@ -195,10 +196,10 @@
               }
             });
 		}	
-		
+			
 		var last_active_id = '';
 		var last_cursor_position = 0;
-	
+		
 		function setValues(id){
 			//console.log('active field id: ' + id);
 			var cursorPos = $('#' +id).prop('selectionStart');
@@ -206,32 +207,32 @@
 			last_active_id = id;
 			last_cursor_position = cursorPos;
 		}
-	
+		
 		function addSProductFieldAction(){
 			$('.sproduct_field').focus(function(){
 				var id = $(this).attr('id');
 				setValues(id);
 				return(false);
 			});	
-		
+			
 			$('.sproduct_field').click(function(){
 				var id = $(this).attr('id');
 				setValues(id);
 				return(false);
 			});	
-		
+			
 			$('.sproduct_field').keyup(function(){
 				var id = $(this).attr('id');
 				setValues(id);
 				return(false);
 			});	
 		}
-	
+		
 		function addSaveAction(){
 			$('#save-btn').click(function(){
 	            $.ajax({
 	              type: "POST",
-	              url: '/api/products/MappingValues',
+	              url: '/api/sources/MappingValues',
 				  data: $('#shopifyProductFields').serialize(),
 	              success: function(data){
 	                console.log(data);
@@ -246,13 +247,13 @@
 				return(false);
 			});	
 		}
-	
+		
 		function addMapAction(){
 			$('.map-btn').click(function(){
 				var id = $(this).attr('data-id');
 				console.log('id: ' + id);
 				addSProductFieldAction();
-				getMappingRecords('products',id);
+				getMappingRecords('sources',id);
 				addSaveAction();
 				$('#mappingModal').modal("show");
 				return(false);
@@ -265,22 +266,22 @@
 	        paging: true,
 	        info: true,
 	        "columns": [
-				{ "data": "source", "name": "source", "title": "Source" },
-				{ "data": "title", "name": "title", "title": "Title" },
-				{ "data": "sku", "name": "sku", "title": "SKU" },
-				{ "data": "barcode", "name": "barcode", "title": "Barcode" },
-				{ "data": "status", "name": "status", "title": "Status" },
+				{ "data": "name", "name": "name", "title": "Name" },
+				{ "data": "products_updated", "name": "products_updated", "title": "Products Updated" },
+				{ "data": "stocks_updated", "name": "stocks_updated", "title": "Stocks Updated" },
+				{ "data": "prices_updated", "name": "prices_updated", "title": "Prices Updated" },
+				{ "data": "default", "name": "default", "title": "Default" },
 				{ "data": "actions", "name": "actions", "title": "Actions" },
 				//repeat for each of my 20 or so fields
 	        ],
-	  		ajax: '/api/products/search',
+	  		ajax: '/api/sources/search',
 	        orderCellsTop: true,
 			columnDefs: [
 		        { "width": "15%", "targets": 0 },
 		        { "width": "20%", "targets": 1 },
-		        { "width": "15%", "targets": 2 },
-		        { "width": "15%", "targets": 3 },
-		        { "width": "15%", "targets": 4 },
+		        { "width": "20%", "targets": 2 },
+		        { "width": "20%", "targets": 3 },
+		        { "width": "5%", "targets": 4 },
 		        { "width": "20%", "targets": 5 }
 			],
 		    "drawCallback": function( settings ) {

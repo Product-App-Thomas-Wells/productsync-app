@@ -13,6 +13,7 @@ class Source extends Model
         'name',
         'products_updated',
         'stocks_updated',
-		'prices_updated'
+		'prices_updated',
+		'field_mapping'
     ];
 }

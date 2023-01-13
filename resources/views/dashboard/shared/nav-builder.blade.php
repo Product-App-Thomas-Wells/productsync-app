@@ -10,15 +10,15 @@
                     </svg>
                     Countries
                 </a>
-            </li>
+            </li>-->
             <li class="c-sidebar-nav-item">
-                <a class="c-sidebar-nav-link" href="/plans">
+                <a class="c-sidebar-nav-link" href="/sources">
                     <svg class="c-sidebar-nav-icon">
                         <use xlink:href="/assets/icons/coreui/free-symbol-defs.svg#cui-list"></use>
                     </svg>
-                    Plans
+                    Sources
                 </a>
-            </li>-->
+            </li>
             <li class="c-sidebar-nav-item">
                 <a class="c-sidebar-nav-link" href="/products">
                     <svg class="c-sidebar-nav-icon">
