@@ -28,7 +28,7 @@ class Product extends Model
 		'field_mapping'
     ];
 	
-	public function getShopifyProductFields(){
+	public static function getShopifyProductFields(){
 		$sproduct_fields = explode("\n\t\t\t","handle
 			title
 			body_html
