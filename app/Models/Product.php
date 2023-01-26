@@ -33,7 +33,6 @@ class Product extends Model
 			title
 			body_html
 			vendor
-			product_type
 			tags
 			published
 			option1_name
@@ -45,16 +44,17 @@ class Product extends Model
 			variant_sku
 			variant_grams
 			variant_inventory_tracker
+			variant_inventory_qty
 			variant_inventory_policy_
 			variant_fulfillment_service
 			variant_price
+			variant_compare_at_price
 			variant_requires_shipping
 			variant_taxable
 			variant_barcode
 			image_src
 			image_position
 			image_alt_text
-			variant_inventory_qty
 			gift_card
 			seo_title
 			seo_description
@@ -69,15 +69,45 @@ class Product extends Model
 			google_shopping__custom_label_0
 			google_shopping_custom_label_1
 			google_shopping_custom_label_2
-			size
 			google_shopping_custom_label_3
 			google_shopping_custom_label_4
 			variant_image
 			variant__weight_unit
 			variant_tax_code
 			cost_per_item
+			status
+			standard_product_type
+			custom_product_type
 			rrp"); 
 			
 		return($sproduct_fields);
+	}
+	
+	public static function getRecordValues($data){
+		$ret = array();
+		foreach($data['records'] as $record){
+			$rid = $record['id'];
+			$rdata = $record['data'];
+			foreach($rdata as $rkey => $rval){
+				$ret['['.$rid.':'.$rkey.']'] = $rval;
+			}
+		}
+		return($ret);
+	}
+	
+	public static function getComputedValues($data){
+		$ret = array();
+		$rvalues = $data['rvalues'];
+		foreach($data['values'] as $key => $val){
+			$pattern = "/\[(.+):(.+)\]/i";
+			$match = preg_match($pattern, $val);
+			if($match){
+				foreach($rvalues as $rkey => $rval){
+					$val = str_replace($rkey,$rval,$val);
+				}
+			}
+			$ret[$key] = $val;
+		}
+		return($ret);
 	}
 }

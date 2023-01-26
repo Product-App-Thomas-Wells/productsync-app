@@ -76,12 +76,14 @@ class ProductController extends Controller
 			$ret['status'] = 'error';
 			$ret['message'] = 'data not found';
 		} else {
+			$ret['rvalues'] = Product::getRecordValues($ret);
 			$product = Product::where('id',$data['id'])->first();
 			$tmp = $product->field_mapping;
 			if($tmp){
 				$tmp2 = json_decode($tmp,true);
 				if(is_array($tmp2)){
 					$ret['values'] = $tmp2;
+					$ret['cvalues'] = Product::getComputedValues($ret);
 				}
 			}
 		}

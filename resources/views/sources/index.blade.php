@@ -145,6 +145,7 @@
 					var textAfter  = v.substring(last_cursor_position, v.length);
 
 					$('#' + last_active_id).val(textBefore + token + textAfter);
+					$('#' + last_active_id).trigger('change');
 					$('#' + last_active_id).prop('selectionStart', textBefore.length + token.length);
 					$('#' + last_active_id).prop('selectionEnd', textBefore.length + token.length);
 					$('#' + last_active_id).focus();
@@ -155,6 +156,8 @@
 			
 		function getMappingRecords(table,id){
 			$('#shopifyProductFields #record_id').val(id);
+			$('#shopifyProductFields .sproduct_field').val('');
+			$('#shopifyProductFields .form-text').html('');
             $.ajax({
               type: "GET",
               url: '/api/' + table + '/getMappingRecords',
@@ -167,6 +170,17 @@
 					var val = values[name];
 					$('#shopifyProductFields #' + name).val(val);
 				}
+				var cvalues = data.cvalues;
+				for(var name in cvalues){
+					var val = cvalues[name];
+					if(val.includes("=")){
+						val = val.replace("=","");
+						val = eval(val);
+					}
+					if(val != '') val = 'ex. ' + val;
+					$('#shopifyProductFields #' + name + 'Help').html(val);
+				}
+				rvalues = data.rvalues;
 				var html = '';
 				var records = data.records;
 				for(var i in records){
@@ -199,6 +213,7 @@
 			
 		var last_active_id = '';
 		var last_cursor_position = 0;
+		var rvalues = [];
 		
 		function setValues(id){
 			//console.log('active field id: ' + id);
@@ -226,6 +241,26 @@
 				setValues(id);
 				return(false);
 			});	
+			
+			$('.sproduct_field').change(function(){
+				// get field value.
+				var fvalue = $(this).val();
+				var cvalue = '';
+				if(fvalue){
+					var cvalue = fvalue;
+					for(var name in rvalues){
+						var val = rvalues[name];
+						cvalue = cvalue.replaceAll(name,val);
+					}
+					if(cvalue.includes("=")){
+						cvalue = cvalue.replace("=","");
+						cvalue = eval(cvalue);
+					}
+				}
+				var fid = $(this).attr('id');
+				cvalue = 'ex. ' + cvalue;
+				$('#' + fid + 'Help').html(cvalue);
+			});
 		}
 		
 		function addSaveAction(){
