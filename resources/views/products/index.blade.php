@@ -172,7 +172,7 @@
 				var cvalues = data.cvalues;
 				for(var name in cvalues){
 					var val = cvalues[name];
-					if(!val.includes(" ") && val.includes("=")){
+					if(val.includes("=")){
 						val = val.replace("=","");
 						val = eval(val);
 					}
@@ -251,7 +251,7 @@
 						var val = rvalues[name];
 						cvalue = cvalue.replace(name,val);
 					}
-					if(!cvalue.includes(" ") && cvalue.includes("=")){
+					if(cvalue.includes("=")){
 						cvalue = cvalue.replace("=","");
 						cvalue = eval(cvalue);
 					}
