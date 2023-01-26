@@ -29,8 +29,7 @@ class Product extends Model
     ];
 	
 	public static function getShopifyProductFields(){
-		$sproduct_fields = explode("\n\t\t\t","handle
-			title
+		$sproduct_fields = explode("\n\t\t\t","title
 			body_html
 			vendor
 			tags
@@ -78,7 +77,14 @@ class Product extends Model
 			status
 			standard_product_type
 			custom_product_type
-			rrp"); 
+			rrp
+			parent_id"); 
+			
+		return($sproduct_fields);
+	}
+	
+	public static function getFixedFields(){
+		$sproduct_fields = explode(",","handle,shopify_product_id,shopify_variant_id"); 
 			
 		return($sproduct_fields);
 	}
@@ -98,7 +104,16 @@ class Product extends Model
 	public static function getComputedValues($data){
 		$ret = array();
 		$rvalues = $data['rvalues'];
-		foreach($data['values'] as $key => $val){
+		$values = $data['values'];
+		if(isset($data['ivalues'])){
+			$values = $data['ivalues'];
+			foreach($data['values'] as $key => $val){
+				if($val){
+					$values[$key] = $val;
+				}
+			}
+		}
+		foreach($values as $key => $val){
 			$pattern = "/\[(.+):(.+)\]/i";
 			$match = preg_match($pattern, $val);
 			if($match){

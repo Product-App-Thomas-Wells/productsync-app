@@ -16,7 +16,8 @@ class ProductController extends Controller
     public function index()
     {
 		$sproduct_fields = Product::getShopifyProductFields();	
-		$params = compact('sproduct_fields');
+		$fixed_fields = Product::getFixedFields();	
+		$params = compact('sproduct_fields','fixed_fields');
 		//echo "<pre>".print_r($params,true)."</pre>"; die();
         return view('products.index',$params);
     }
@@ -45,6 +46,7 @@ class ProductController extends Controller
 					);
 					$ret['records'] = $records;
 					$ret['status'] = 'success';
+					$ret['product_id'] = $product->id;
 				}
 			}
 			
@@ -52,8 +54,9 @@ class ProductController extends Controller
 			if($barcode){
 				$rows = Product::where('barcode',$barcode)->get();
 				if(count($rows) > 1){
-					$records = array();
+					//$records = array();
 					foreach($rows as $product){
+						if($product->id == $data['id']) continue;
 						$tmp = $product->product_data;
 						if($tmp){
 							$tmp2 = json_decode($tmp,true);
@@ -78,14 +81,16 @@ class ProductController extends Controller
 		} else {
 			$ret['rvalues'] = Product::getRecordValues($ret);
 			$product = Product::where('id',$data['id'])->first();
+			$ret['source'] = $product->source;
+			$ret['ivalues'] = Source::getFieldMapping($ret);
 			$tmp = $product->field_mapping;
 			if($tmp){
 				$tmp2 = json_decode($tmp,true);
 				if(is_array($tmp2)){
 					$ret['values'] = $tmp2;
-					$ret['cvalues'] = Product::getComputedValues($ret);
 				}
 			}
+			$ret['cvalues'] = Product::getComputedValues($ret);
 		}
 		
 		header('Content-Type: application/json; charset=utf-8');

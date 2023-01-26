@@ -58,7 +58,7 @@
     <!-- Modal content-->
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Map Product Fields</h4>
+        <h4 class="modal-title">Map Product Fields (id:<span id="edit_id"></span>)</h4>
 		<button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
       <div class="modal-body">
@@ -78,6 +78,17 @@
 					<div class="form-group">
 						<label><?php echo $title; ?></label>
 						<input type="text" class="form-control sproduct_field" id="<?php echo $field; ?>" name="<?php echo $field; ?>">
+						<small id="<?php echo $field; ?>Help" class="form-text text-muted"></small>
+					</div>
+				  <?php } ?>
+				  <?php foreach($fixed_fields as $field){ ?>
+					<?php
+						$title = str_replace("_"," ",$field);
+						$title = ucwords($title);
+					?>
+					<div class="form-group">
+						<label><?php echo $title; ?></label>
+						<input type="text" class="form-control" id="<?php echo $field; ?>" name="<?php echo $field; ?>" readonly>
 						<small id="<?php echo $field; ?>Help" class="form-text text-muted"></small>
 					</div>
 				  <?php } ?>
@@ -155,6 +166,7 @@
 		
 		function getMappingRecords(table,id){
 			$('#shopifyProductFields #record_id').val(id);
+			$('#mappingModal #edit_id').html(id);
 			$('#shopifyProductFields .sproduct_field').val('');
 			$('#shopifyProductFields .form-text').html('');
             $.ajax({
@@ -178,6 +190,11 @@
 					}
 					if(val != '') val = 'ex. ' + val;
 					$('#shopifyProductFields #' + name + 'Help').html(val);
+				}
+				var ivalues = data.ivalues;
+				for(var name in ivalues){
+					var val = ivalues[name];
+					$('#shopifyProductFields #' + name).attr('placeholder',val);
 				}
 				rvalues = data.rvalues;
 				var html = '';
@@ -206,6 +223,8 @@
 				}
 				$('#mappingModal #matches').html(html);
 				addTokenAction();
+				addSaveAction();
+				$('#mappingModal').modal("show");
               }
             });
 		}	
@@ -223,27 +242,33 @@
 		}
 	
 		function addSProductFieldAction(){
+			$('.sproduct_field').unbind('focus');
 			$('.sproduct_field').focus(function(){
 				var id = $(this).attr('id');
 				setValues(id);
 				return(false);
 			});	
-		
+			
+			$('.sproduct_field').unbind('click');
 			$('.sproduct_field').click(function(){
 				var id = $(this).attr('id');
 				setValues(id);
 				return(false);
 			});	
-		
+			
+			$('.sproduct_field').unbind('keyup');
 			$('.sproduct_field').keyup(function(){
 				var id = $(this).attr('id');
 				setValues(id);
 				return(false);
 			});	
 			
+			$('.sproduct_field').unbind('change');
 			$('.sproduct_field').change(function(){
 				// get field value.
 				var fvalue = $(this).val();
+				var ivalue = $(this).attr('placeholder');
+				if(fvalue == '' && typeof ivalue != 'undefined') fvalue = ivalue;
 				var cvalue = '';
 				if(fvalue){
 					var cvalue = fvalue;
@@ -263,6 +288,7 @@
 		}
 	
 		function addSaveAction(){
+			$('#save-btn').unbind('click');
 			$('#save-btn').click(function(){
 	            $.ajax({
 	              type: "POST",
@@ -283,13 +309,12 @@
 		}
 	
 		function addMapAction(){
+			$('.map-btn').unbind('click');
 			$('.map-btn').click(function(){
 				var id = $(this).attr('data-id');
 				console.log('id: ' + id);
 				addSProductFieldAction();
 				getMappingRecords('products',id);
-				addSaveAction();
-				$('#mappingModal').modal("show");
 				return(false);
 			});	
 		}

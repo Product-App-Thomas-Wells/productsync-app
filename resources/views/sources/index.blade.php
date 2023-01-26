@@ -66,6 +66,7 @@
 		    <div class="col col-modal-body">
 				<form id="shopifyProductFields">
 				  <input type="hidden" name="id" id="record_id" value="">
+				  <input type="hidden" name="product_id" id="product_id" value="">
 				  <!--<div class="form-group">
 				    <label>Title</label>
 				    <input type="text" class="form-control" id="title" name="title">
@@ -165,6 +166,7 @@
               success: function(data){
                 //console.log(data);
 				console.log('status: ' + data.status);
+				$('#shopifyProductFields #product_id').val(data.product_id);
 				var values = data.values;
 				for(var name in values){
 					var val = values[name];
@@ -207,6 +209,8 @@
 				}
 				$('#mappingModal #matches').html(html);
 				addTokenAction();
+				addSaveAction();
+				$('#mappingModal').modal("show");
               }
             });
 		}	
@@ -224,24 +228,28 @@
 		}
 		
 		function addSProductFieldAction(){
+			$('.sproduct_field').unbind('focus');
 			$('.sproduct_field').focus(function(){
 				var id = $(this).attr('id');
 				setValues(id);
 				return(false);
 			});	
 			
+			$('.sproduct_field').unbind('click');
 			$('.sproduct_field').click(function(){
 				var id = $(this).attr('id');
 				setValues(id);
 				return(false);
 			});	
 			
+			$('.sproduct_field').unbind('keyup');
 			$('.sproduct_field').keyup(function(){
 				var id = $(this).attr('id');
 				setValues(id);
 				return(false);
 			});	
 			
+			$('.sproduct_field').unbind('change');
 			$('.sproduct_field').change(function(){
 				// get field value.
 				var fvalue = $(this).val();
@@ -264,6 +272,7 @@
 		}
 		
 		function addSaveAction(){
+			$('#save-btn').unbind('click');
 			$('#save-btn').click(function(){
 	            $.ajax({
 	              type: "POST",
@@ -284,13 +293,12 @@
 		}
 		
 		function addMapAction(){
+			$('.map-btn').unbind('click');
 			$('.map-btn').click(function(){
 				var id = $(this).attr('data-id');
 				console.log('id: ' + id);
 				addSProductFieldAction();
 				getMappingRecords('sources',id);
-				addSaveAction();
-				$('#mappingModal').modal("show");
 				return(false);
 			});	
 		}

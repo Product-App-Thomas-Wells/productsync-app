@@ -32,8 +32,19 @@ class SourceController extends Controller
 		//echo "<pre>".print_r(compact('function','data'),true)."</pre>"; die();
 
 		$ret = array('source_id' => $data['id']);
-		$records = array();
 		$product = Product::where('source',$data['id'])->orderBy('id','desc')->first();
+		$source = Source::where('id',$data['id'])->first();
+		$tmp = $source->field_mapping;
+		if($tmp){
+			$tmp2 = json_decode($tmp,true);
+			if(is_array($tmp2)){
+				if(isset($tmp2['product_id'])){
+					$product = Product::where('id',$tmp2['product_id'])->first();
+				}
+			}
+		}
+		
+		$records = array();
 		if($product){
 			$tmp = $product->product_data;
 			if($tmp){
@@ -45,6 +56,7 @@ class SourceController extends Controller
 					);
 					$ret['records'] = $records;
 					$ret['status'] = 'success';
+					$ret['product_id'] = $product->id;
 				}
 			}
 		}
@@ -55,7 +67,6 @@ class SourceController extends Controller
 			$ret['message'] = 'data not found';
 		} else {
 			$ret['rvalues'] = Product::getRecordValues($ret);
-			$source = Source::where('id',$data['id'])->first();
 			$tmp = $source->field_mapping;
 			if($tmp){
 				$tmp2 = json_decode($tmp,true);
