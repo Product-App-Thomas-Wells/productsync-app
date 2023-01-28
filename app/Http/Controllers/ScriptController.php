@@ -5,10 +5,83 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Source;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 class ScriptController extends Controller
 {
+    public function post_products_trilanco(Request $request)
+    {
+        Log::info(__FUNCTION__);
+		$data2 = $_REQUEST;
+		$json = file_get_contents('php://input');
+		$data = json_decode($json,true);
+		if(is_array($data)){
+			$data = array_merge($data,$data2);
+		}
+		$function = __FUNCTION__;
+		echo "<pre>".print_r(compact('function','data'),true)."</pre>"; //die();
+		
+		// get source.
+		$source = Source::where('name','trilanco')->first();
+		$source_id = $source->id;
+		//echo "<pre>".print_r(compact('source_id'),true)."</pre>"; //die();
+		
+		// get unposted records.
+		$processed = 0;
+		$limit = 5;
+		while($processed < $limit){
+			$product = Product::where('source',$source_id)->where('status',0)->first();
+			//$product = Product::where('source',$source_id)->where('barcode','5019948108001')->first();
+			//$product = Product::where('source',$source_id)->where('barcode','5051274002455')->first();
+			if($product){
+				// check for duplicate barcodes.
+				$product_id = $product->id;
+				$barcode = $product->barcode;
+				echo "<pre>".print_r(compact('product_id','barcode'),true)."</pre>"; 
+				$processed++;
+				
+				// check dups by barcode.
+				$rows = Product::where('id','!=',$product->id)->where('barcode',$product->barcode)->get();
+				$dups = json_decode(json_encode($rows),true);
+				if(!empty($dups)){
+					Product::where('id',$product_id)->update(['status' => -1]);
+					foreach($dups as $dup){
+						Product::where('id',$dup['id'])->update(['status' => -1]);
+					}
+					continue;
+				}
+				
+				// check dups by title.
+				$rows = Product::where('id','!=',$product->id)->where('title',$product->title)->get();
+				$dups = json_decode(json_encode($rows),true);
+				if(!empty($dups)){
+					Product::where('id',$product_id)->update(['status' => -2]);
+					foreach($dups as $dup){
+						Product::where('id',$dup['id'])->update(['status' => -2]);
+					}
+					continue;
+				}
+				
+				// check if fields are mapped.
+				$cvalues = Product::getComputedMappingData(['id' => $product_id]);
+				if(isset($cvalues['title']) && $cvalues['title'] == ''){
+					Product::where('id',$product_id)->update(['status' => -3]);
+					continue;
+				}
+				
+				// create shopify product.
+				Product::where('id',$product_id)->update(['status' => 1]);
+				$shop = User::where('name',env('SHOPIFY_DOMAIN'))->first();
+				$ret = Product::newShopifyProduct($shop->id,$product_id);
+				if($ret['status'] == 'success'){
+					$tmp = Product::where('id',$product_id)->update(['status' => 2]);
+				}
+			}
+		}
+
+	}
+	
     public function pull_products_trilanco(Request $request)
     {
         Log::info(__FUNCTION__);

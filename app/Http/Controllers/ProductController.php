@@ -73,6 +73,7 @@ class ProductController extends Controller
         $where3 = '';
         $search_value2 = isset($request['search']) && isset($request['search']['value']) ? $request['search']['value'] : '';
         $cols = $request['columns'];
+		$statuses = Product::getStatuses();
         foreach($cols as $col){
             $search_value = isset($col['search']) && isset($col['search']['value']) ? $col['search']['value'] : '';
             $col_name = isset($col['name']) ? $col['name'] : '';
@@ -80,7 +81,23 @@ class ProductController extends Controller
 				continue;
 			}
             if($search_value){
-                $where2 .= " && ".$col_name." LIKE ('".addslashes($search_value)."%')";
+				if($col_name == 'status'){
+					$smatches = array();
+					$search_value = strtolower($search_value);
+					foreach($statuses as $s => $status){
+						$status = strtolower($status);
+						if(strpos($status,$search_value) !== FALSE) $smatches[] = $s;
+					}
+					if(!empty($smatches)){
+						$search_value = array_search($search_value,$statuses);
+						$where2 .= " && ".$col_name." IN (".implode(",",$smatches).")";
+					} else {
+						$where2 .= " && ".$col_name." LIKE ('".addslashes($search_value)."%')";
+					}
+				} else {
+					$where2 .= " && ".$col_name." LIKE ('".addslashes($search_value)."%')";
+					//echo "<pre>".print_r(compact('where2'),true)."</pre>";
+				}
             }
             if($search_value2){
                 if($where3) $where3 .= " || ";
@@ -88,6 +105,7 @@ class ProductController extends Controller
             }
         }
         if($where3) $where2 .= " && (".$where3.")";
+		//echo "<pre>".print_r(compact('where2','where3'),true)."</pre>";
         $messages = Product::whereRaw($where2);
         $recordsFiltered = $messages->count();
         $offset = isset($request['start']) ? $request['start'] : 0;
@@ -110,7 +128,6 @@ class ProductController extends Controller
         foreach($data as $i => $row){
             //$row['created_at'] = date("Y-m-d H:i:s",strtotime($row['created_at']));
 			$row['source'] = Source::find($row['source'])->name;
-			$statuses = array("New","Pending","Synced");
 			$row['status'] = $statuses[$row['status']];
 			$row['actions'] = '<a href="" class="map-btn" data-id="'.$row['id'].'"><i class="fa fa-fw fa-map" title="Map Fields"></i></a>';
 			$row['actions'] .= ' <a href="" class="post-btn" data-id="'.$row['id'].'"><i class="fa fa-fw fa-send" title="Send To Shopify"></i></a>';

@@ -8,8 +8,10 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
-class PostShopifyProducts implements ShouldQueue
+class PostTrilancoShopifyProducts implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -30,6 +32,8 @@ class PostShopifyProducts implements ShouldQueue
      */
     public function handle()
     {
-        //
+		$url = env('APP_URL').'/scripts/post_products/trilanco';
+		Log::info($url);
+        $response = Http::get($url);
     }
 }

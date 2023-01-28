@@ -30,6 +30,14 @@ class Product extends Model
 		'field_mapping'
     ];
 	
+	public static function getStatuses(){
+		$ret = array("New","Pending","Synced");
+		$ret[-1] = "Duplicate Barcode";
+		$ret[-2] = "Duplicate Title";
+		$ret[-3] = "Fields Not Mapped";
+		return($ret);
+	}
+	
 	public static function getShopifyProductFields(){
 		$sproduct_fields = explode("\n\t\t\t","title
 			body_html
@@ -300,7 +308,7 @@ class Product extends Model
 		$exists = false;
 		if($cvalues['variant_barcode']){
 			$query = 'query {
-			  products(first: 10, query: "barcode:'.urlencode($cvalues['variant_barcode']).'") {
+			  products(first: 10, query: "barcode:'.$cvalues['variant_barcode'].'") {
 			    edges {
 			      node {
 					id
@@ -320,6 +328,34 @@ class Product extends Model
 			$title = "Something went wrong!";
 			$status = "error";
 			$message = "Barcode already exists in store. Please assign a parent id and create a variant instead.";
+			$ret = compact('title','status','message');
+			return($ret);
+		}
+		
+		// check if title exists.
+		$exists = false;
+		if($cvalues['title']){
+			$query = 'query {
+			  products(first: 10, query: "title:\"'.$cvalues['title'].'\"") {
+			    edges {
+			      node {
+					id
+			        title
+			      }
+			    }
+			  }
+			}';
+			$request = $shop->api()->graph($query);
+			$tmp = $request['body'];
+			$tmp = json_decode(json_encode($tmp),true);
+			//echo "<pre>".print_r(compact('query','tmp'),true)."</pre>"; die();
+			$exists = !empty($tmp['data']['products']['edges']);
+		}
+		if($exists){
+			// error: product already exists in store.
+			$title = "Something went wrong!";
+			$status = "error";
+			$message = "Title already exists in store. Please assign a parent id and create a variant instead.";
 			$ret = compact('title','status','message');
 			return($ret);
 		}
@@ -480,7 +516,7 @@ class Product extends Model
 		$exists = false;
 		if($cvalues['variant_barcode']){
 			$query = 'query {
-			  products(first: 10, query: "sku:'.urlencode($cvalues['variant_sku']).' AND barcode:'.urlencode($cvalues['variant_barcode']).'") {
+			  products(first: 10, query: "sku:'.$cvalues['variant_sku'].' AND barcode:'.$cvalues['variant_barcode'].'") {
 			    edges {
 			      node {
 					id

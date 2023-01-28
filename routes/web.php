@@ -24,6 +24,7 @@ Route::resource('sources', App\Http\Controllers\SourceController::class)->middle
 //Route::resource('products', App\Http\Controllers\ProductController::class);
 //Route::resource('sources', App\Http\Controllers\SourceController::class);
 Route::get('/scripts/pull_products/trilanco',  [ScriptController::class, 'pull_products_trilanco']);
+Route::get('/scripts/post_products/trilanco',  [ScriptController::class, 'post_products_trilanco']);
 
 //Auth::routes();
 
