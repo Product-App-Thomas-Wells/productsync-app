@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Source;
+use Illuminate\Support\Facades\Log;
 
 class ScriptController extends Controller
 {
     public function pull_products_trilanco(Request $request)
     {
-        //
+        Log::info(__FUNCTION__);
 		$data2 = $_REQUEST;
 		$json = file_get_contents('php://input');
 		$data = json_decode($json,true);
@@ -136,6 +137,9 @@ class ScriptController extends Controller
 							//$i++;
 							//if($i > $limit) break;
 							// do stuff
+							//echo "<pre>".print_r(compact('cols','row'),true)."</pre>";
+							$check = !empty($row) && count($row) == count($cols);
+							if(!$check) continue;
 							$rdata = array_combine($cols,$row);
 							//echo "<pre>".print_r($rdata,true)."</pre>";
 							
@@ -171,8 +175,10 @@ class ScriptController extends Controller
 											$tmp = Product::create($irow);
 										} else {
 											$error = "skipped record exists.";
-											echo "<pre>".print_r(compact('rdata','where','error'),true)."</pre>"; die();
-											$tmp = Product::where('source',$source->id)->whereRaw($where)->update($irow);
+											//echo "<pre>".print_r(compact('rdata','where','error'),true)."</pre>"; die();
+											if($erow['product_data'] != $irow['product_data']){
+												$tmp = Product::where('source',$source->id)->whereRaw($where)->update($irow);
+											}
 										}
 									} else {
 										$error = "no sku or barcode provided.";

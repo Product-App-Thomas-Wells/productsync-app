@@ -9,6 +9,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class PullTrilancoProducts implements ShouldQueue
 {
@@ -31,8 +32,8 @@ class PullTrilancoProducts implements ShouldQueue
      */
     public function handle()
     {
-		$url = APP_URL.'/scripts/pull_products/trilanco';
-		echo $url;
+		$url = env('APP_URL').'/scripts/pull_products/trilanco';
+		Log::info($url);
         $response = Http::get($url);
     }
 }
