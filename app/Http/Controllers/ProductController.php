@@ -17,7 +17,10 @@ class ProductController extends Controller
     {
 		$sproduct_fields = Product::getShopifyProductFields();	
 		$fixed_fields = Product::getFixedFields();	
-		$params = compact('sproduct_fields','fixed_fields');
+		$user = auth()->user();
+		//echo "<pre>".print_r(compact('user'),true)."</pre>"; die();
+		$user_id = $user->id;
+		$params = compact('sproduct_fields','fixed_fields','user_id');
 		//echo "<pre>".print_r($params,true)."</pre>"; die();
         return view('products.index',$params);
     }
@@ -31,68 +34,7 @@ class ProductController extends Controller
 		}
 		$function = __FUNCTION__;
 		//echo "<pre>".print_r(compact('function','data'),true)."</pre>"; die();
-
-		$ret = array('product_id' => $data['id']);
-		$records = array();
-		$product = Product::where('id',$data['id'])->first();
-		if($product){
-			$tmp = $product->product_data;
-			if($tmp){
-				$tmp2 = json_decode($tmp,true);
-				if(is_array($tmp2)){
-					$records[] = array(
-						'id' => $product->id,
-						'data' => json_decode(json_encode($tmp2),true)
-					);
-					$ret['records'] = $records;
-					$ret['status'] = 'success';
-					$ret['product_id'] = $product->id;
-				}
-			}
-			
-			$barcode = $product->barcode;
-			if($barcode){
-				$rows = Product::where('barcode',$barcode)->get();
-				if(count($rows) > 1){
-					//$records = array();
-					foreach($rows as $product){
-						if($product->id == $data['id']) continue;
-						$tmp = $product->product_data;
-						if($tmp){
-							$tmp2 = json_decode($tmp,true);
-							if(is_array($tmp2)){
-								$records[] = array(
-									'id' => $product->id,
-									'data' => json_decode(json_encode($tmp2),true)
-								);
-								$ret['records'] = $records;
-								$ret['status'] = 'success';
-							}
-						}
-					}
-				}
-			}
-		}
-		
-		$ret['values'] = array();
-		if(!isset($ret['records'])){
-			$ret['status'] = 'error';
-			$ret['message'] = 'data not found';
-		} else {
-			$ret['rvalues'] = Product::getRecordValues($ret);
-			$product = Product::where('id',$data['id'])->first();
-			$ret['source'] = $product->source;
-			$ret['ivalues'] = Source::getFieldMapping($ret);
-			$tmp = $product->field_mapping;
-			if($tmp){
-				$tmp2 = json_decode($tmp,true);
-				if(is_array($tmp2)){
-					$ret['values'] = $tmp2;
-				}
-			}
-			$ret['cvalues'] = Product::getComputedValues($ret);
-		}
-		
+		$ret = Product::getMappingData($data);
 		header('Content-Type: application/json; charset=utf-8');
 		echo json_encode($ret); die();
 	}
@@ -170,7 +112,8 @@ class ProductController extends Controller
 			$row['source'] = Source::find($row['source'])->name;
 			$statuses = array("New","Pending","Synced");
 			$row['status'] = $statuses[$row['status']];
-			$row['actions'] = '<a href="" class="map-btn" data-id="'.$row['id'].'">Map Fields</a>';
+			$row['actions'] = '<a href="" class="map-btn" data-id="'.$row['id'].'"><i class="fa fa-fw fa-map" title="Map Fields"></i></a>';
+			$row['actions'] .= ' <a href="" class="post-btn" data-id="'.$row['id'].'"><i class="fa fa-fw fa-send" title="Send To Shopify"></i></a>';
             $data[$i] = $row;
         }
         $ret = compact('draw','recordsTotal','recordsFiltered','data');
@@ -264,4 +207,46 @@ class ProductController extends Controller
     {
         //
     }
+	
+	public function newShopifyProduct(Request $request){
+		$data = $_REQUEST;
+		$json = file_get_contents('php://input');
+		$data2 = json_decode($json,true);
+		if(is_array($data2)){
+			$data = array_merge($data,$data2);
+		}
+		$function = __FUNCTION__;
+		//echo "<pre>".print_r(compact('function','data'),true)."</pre>"; die();
+
+		// create shopify product.
+		$id = $data['id'];
+		$user_id = $data['user_id'];
+		$ret = Product::newShopifyProduct($user_id,$id);
+		if($ret['status'] == 'success'){
+			$tmp = Product::where('id',$id)->update(['status' => 2]);
+		}
+		header('Content-Type: application/json; charset=utf-8');
+		echo json_encode($ret); die();
+	}
+	
+	public function newShopifyVariant(Request $request){
+		$data = $_REQUEST;
+		$json = file_get_contents('php://input');
+		$data2 = json_decode($json,true);
+		if(is_array($data2)){
+			$data = array_merge($data,$data2);
+		}
+		$function = __FUNCTION__;
+		//echo "<pre>".print_r(compact('function','data'),true)."</pre>"; die();
+
+		// create shopify variant.
+		$id = $data['id'];
+		$user_id = $data['user_id'];
+		$ret = Product::newShopifyVariant($user_id,$id);
+		if($ret['status'] == 'success'){
+			$tmp = Product::where('id',$id)->update(['status' => 2]);
+		}
+		header('Content-Type: application/json; charset=utf-8');
+		echo json_encode($ret); die();
+	}
 }

@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="{{ asset('/vendors/sweetalert2/sweetalert2.min.css') }}">
 <link rel="stylesheet" href="{{ asset('/vendors/jquery/jquery-ui.css') }}">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://adminlte.io/themes/AdminLTE/bower_components/font-awesome/css/font-awesome.min.css">
 <style>
 	#tbl-sims {
 	    margin: 0 auto;

@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="{{ asset('/vendors/sweetalert2/sweetalert2.min.css') }}">
 <link rel="stylesheet" href="{{ asset('/vendors/jquery/jquery-ui.css') }}">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://adminlte.io/themes/AdminLTE/bower_components/font-awesome/css/font-awesome.min.css">
 <style>
 	#tbl-sims {
 	    margin: 0 auto;
@@ -119,6 +120,63 @@
 
   </div>
 </div>
+
+<div id="postingModal" class="modal fade" data-backdrop="static" role="dialog">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Send to Shopify (id:<span id="edit_id"></span>)</h4>
+		<button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+		<div class="row">
+		    <div class="col col-modal-body">
+				<form id="shopifyProductFields">
+				  <input type="hidden" name="id" id="record_id" value="">
+				  <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
+				  <!--<div class="form-group">
+				    <label>Title</label>
+				    <input type="text" class="form-control" id="title" name="title">
+				  </div>-->
+				  <?php foreach($sproduct_fields as $field){ ?>
+					<?php
+						$title = str_replace("_"," ",$field);
+						$title = ucwords($title);
+					?>
+					<div class="form-group">
+						<label><?php echo $title; ?></label>
+						<input type="text" class="form-control sproduct_field" id="<?php echo $field; ?>" name="<?php echo $field; ?>" readonly>
+						<small id="<?php echo $field; ?>Help" class="form-text text-muted"></small>
+					</div>
+				  <?php } ?>
+				  <?php foreach($fixed_fields as $field){ ?>
+					<?php
+						$title = str_replace("_"," ",$field);
+						$title = ucwords($title);
+					?>
+					<div class="form-group">
+						<label><?php echo $title; ?></label>
+						<input type="text" class="form-control" id="<?php echo $field; ?>" name="<?php echo $field; ?>" readonly>
+						<small id="<?php echo $field; ?>Help" class="form-text text-muted"></small>
+					</div>
+				  <?php } ?>
+				</form>
+		    </div>
+		    <div class="col col-modal-body" id="matches">
+		    </div>
+		</div>
+      </div>
+      <div class="modal-footer">
+		<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+		<button type="button" class="btn btn-primary" id="new-product-btn">New Product</button>
+		<button type="button" class="btn btn-primary" id="new-variant-btn">New Variant</button>
+      </div>
+    </div>
+
+  </div>
+</div>
 @endsection
 
 @section('javascript')
@@ -142,7 +200,7 @@
 			.appendTo('#tbl-sims thead');
 			
 		function addTokenAction(){
-			$('.fieldtoken').click(function(){
+			$('#mappingModal .fieldtoken').click(function(){
 				var token = $(this).attr('data-token');
 				var value = $(this).attr('data-value');
 				console.log('token: ' + token);
@@ -165,10 +223,10 @@
 		}
 		
 		function getMappingRecords(table,id){
-			$('#shopifyProductFields #record_id').val(id);
+			$('#mappingModal #record_id').val(id);
 			$('#mappingModal #edit_id').html(id);
-			$('#shopifyProductFields .sproduct_field').val('');
-			$('#shopifyProductFields .form-text').html('');
+			$('#mappingModal .sproduct_field').val('');
+			$('#mappingModal .form-text').html('');
             $.ajax({
               type: "GET",
               url: '/api/' + table + '/getMappingRecords',
@@ -179,22 +237,22 @@
 				var values = data.values;
 				for(var name in values){
 					var val = values[name];
-					$('#shopifyProductFields #' + name).val(val);
+					$('#mappingModal #' + name).val(val);
 				}
 				var cvalues = data.cvalues;
 				for(var name in cvalues){
 					var val = cvalues[name];
-					if(val.includes("=")){
+					/*if(val.includes("=")){
 						val = val.replace("=","");
 						val = eval(val);
-					}
+					}*/
 					if(val != '') val = 'ex. ' + val;
-					$('#shopifyProductFields #' + name + 'Help').html(val);
+					$('#mappingModal #' + name + 'Help').html(val);
 				}
 				var ivalues = data.ivalues;
 				for(var name in ivalues){
 					var val = ivalues[name];
-					$('#shopifyProductFields #' + name).attr('placeholder',val);
+					$('#mappingModal #' + name).attr('placeholder',val);
 				}
 				rvalues = data.rvalues;
 				var html = '';
@@ -276,10 +334,10 @@
 						var val = rvalues[name];
 						cvalue = cvalue.replace(name,val);
 					}
-					if(cvalue.includes("=")){
+					/*if(cvalue.includes("=")){
 						cvalue = cvalue.replace("=","");
 						cvalue = eval(cvalue);
-					}
+					}*/
 				}
 				var fid = $(this).attr('id');
 				if(cvalue) cvalue = 'ex. ' + cvalue;
@@ -293,7 +351,7 @@
 	            $.ajax({
 	              type: "POST",
 	              url: '/api/products/MappingValues',
-				  data: $('#shopifyProductFields').serialize(),
+				  data: $('#mappingModal #shopifyProductFields').serialize(),
 	              success: function(data){
 	                console.log(data);
 					$('#mappingModal').modal("hide");
@@ -302,6 +360,7 @@
 						data.message,
 						data.status
 					);
+					table.ajax.reload();
 	              }
 	            });
 				return(false);
@@ -315,6 +374,140 @@
 				console.log('id: ' + id);
 				addSProductFieldAction();
 				getMappingRecords('products',id);
+				return(false);
+			});	
+		}
+		
+		function addNewProductAction(){
+			$('#new-product-btn').unbind('click');
+			$('#new-product-btn').click(function(){
+	            $.ajax({
+	              type: "POST",
+	              url: '/api/products/newShopifyProduct',
+				  data: $('#postingModal #shopifyProductFields').serialize(),
+	              success: function(data){
+	                console.log(data);
+					$('#postingModal').modal("hide");
+					Swal.fire(
+						data.title,
+						data.message,
+						data.status
+					);
+					table.ajax.reload();
+	              }
+	            });
+				return(false);
+			});	
+		}
+		
+		function addNewVariantAction(){
+			$('#new-variant-btn').unbind('click');
+			$('#new-variant-btn').click(function(){
+	            $.ajax({
+	              type: "POST",
+	              url: '/api/products/newShopifyVariant',
+				  data: $('#postingModal #shopifyProductFields').serialize(),
+	              success: function(data){
+	                console.log(data);
+					$('#postingModal').modal("hide");
+					Swal.fire(
+						data.title,
+						data.message,
+						data.status
+					);
+					table.ajax.reload();
+	              }
+	            });
+				return(false);
+			});	
+		}
+		
+		function getPostingRecords(table,id){
+			$('#postingModal #record_id').val(id);
+			$('#postingModal #edit_id').html(id);
+			$('#postingModal .sproduct_field').val('');
+			$('#postingModal .form-text').html('');
+            $.ajax({
+              type: "GET",
+              url: '/api/' + table + '/getMappingRecords',
+			  data: {id: id},
+              success: function(data){
+                //console.log(data);
+				console.log('status: ' + data.status);
+				var values = data.values;
+				for(var name in values){
+					var val = values[name];
+					$('#postingModal #' + name).val(val);
+				}
+				var cvalues = data.cvalues;
+				for(var name in cvalues){
+					var val = cvalues[name];
+					/*if(val.includes("=")){
+						val = val.replace("=","");
+						val = eval(val);
+					}*/
+					if(val != '') val = 'ex. ' + val;
+					$('#postingModal #' + name + 'Help').html(val);
+				}
+				var ivalues = data.ivalues;
+				for(var name in ivalues){
+					var val = ivalues[name];
+					$('#postingModal #' + name).attr('placeholder',val);
+				}
+				rvalues = data.rvalues;
+				var html = '';
+				var records = data.records;
+				for(var i in records){
+					var record = records[i];
+					console.log('record id: ' + record.id);
+					var fieldtokens = '';
+					var rdata = record.data;
+					for(var name in rdata){
+						var value = rdata[name];
+						fieldtokens += '<p><a data-token="[' + record.id + ':' + name + ']" data-value="' + value + '" class="fieldtoken" href="">' + name + '</a> - ' + value + '</p>'; 
+					}
+					html += '<div id="product-' + record.id + '">' +
+								'<p>' +
+								  '<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapse-' + record.id + '">' +
+								    'Sample Record id:' + record.id +
+								  '</button>' +
+								'</p>' +
+								(records.length == 1 ? '<div class="collapse in show" id="collapse-' + record.id + '" style="" aria-expanded="true">' : '<div class="collapse" id="collapse-' + record.id + '">') + 
+								  '<div class="card card-body">' +
+								    fieldtokens +  
+								  '</div>' +
+								'</div>' +
+							'</div>';
+				}
+				$('#postingModal #matches').html(html);
+				$('#postingModal .fieldtoken').click(function(){
+					return(false);
+				});	
+				
+				// enable or disable actions.
+				var handle = values['handle'];
+				console.log('handle: ' + handle);
+				if(handle != ''){
+					$('#postingModal #new-product-btn').attr('disabled','true');
+					$('#postingModal #new-variant-btn').attr('disabled','true');
+				} else {
+					$('#postingModal #new-product-btn').removeAttr('disabled');
+					$('#postingModal #new-variant-btn').removeAttr('disabled');
+				}
+				addNewProductAction();
+				addNewVariantAction();
+				$('#postingModal').modal("show");
+              }
+            });
+		}	
+		
+		function addPostAction(){
+			$('.post-btn').unbind('click');
+			$('.post-btn').click(function(){
+				var id = $(this).attr('data-id');
+				console.log('id: ' + id);
+				//addSProductFieldAction();
+				getPostingRecords('products',id);
 				return(false);
 			});	
 		}
@@ -345,6 +538,7 @@
 			],
 		    "drawCallback": function( settings ) {
 		        addMapAction();
+				addPostAction();
 		    },
 	        initComplete: function () {
 	            var api = this.api();

@@ -25,3 +25,5 @@ Route::get('/sources/getMappingRecords',  'App\Http\Controllers\SourceController
 Route::get('/products/getMappingRecords',  'App\Http\Controllers\ProductController@getMappingRecords')->name('product.getMappingRecords');
 Route::post('/sources/MappingValues',  'App\Http\Controllers\SourceController@saveMappingValues')->name('source.saveMappingValues');
 Route::post('/products/MappingValues',  'App\Http\Controllers\ProductController@saveMappingValues')->name('product.saveMappingValues');
+Route::post('/products/newShopifyProduct',  'App\Http\Controllers\ProductController@newShopifyProduct')->name('product.newShopifyProduct');
+Route::post('/products/newShopifyVariant',  'App\Http\Controllers\ProductController@newShopifyVariant')->name('product.newShopifyVariant');

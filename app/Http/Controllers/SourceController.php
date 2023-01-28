@@ -50,6 +50,7 @@ class SourceController extends Controller
 			if($tmp){
 				$tmp2 = json_decode($tmp,true);
 				if(is_array($tmp2)){
+					$tmp2['stock'] = $product->stock;
 					$records[] = array(
 						'id' => $product->id,
 						'data' => json_decode(json_encode($tmp2),true)
@@ -155,7 +156,7 @@ class SourceController extends Controller
 			//$statuses = array("New","Pending","Synced");
 			//$row['status'] = $statuses[$row['status']];
 			$row['default'] = ($i == 0 ? 'Yes' : 'No');
-			$row['actions'] = '<a href="" class="map-btn" data-id="'.$row['id'].'">Map Product Fields</a>';
+			$row['actions'] = '<a href="" class="map-btn" data-id="'.$row['id'].'"><i class="fa fa-fw fa-map" title="Map Fields"></i></a>';
             $data[$i] = $row;
         }
         $ret = compact('draw','recordsTotal','recordsFiltered','data');
